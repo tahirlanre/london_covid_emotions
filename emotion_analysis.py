@@ -38,7 +38,7 @@ def get_tweets_with_predicitons(data_dir, predictions_dir):
     """Get tweets with emotion predictions.
 
     Arguments:
-        data_dir: Directory containing the tweet data.
+        data_dir: Directory containing the tweet data. Files are stored on a daily basis.
         predictions_dir: Directory containing the prediction files.
 
     Returns:
@@ -52,8 +52,8 @@ def get_tweets_with_predicitons(data_dir, predictions_dir):
         df["date"] = pd.to_datetime(dt, format="%d-%m-%Y")
         for pred_file in glob.glob(f"{predictions_dir}/{dt}*.txt"):
             df_pred = pd.read_csv(pred_file, sep="\t", usecols=["prediction"])
-            category = pred_file.split("_")[-1].split(".")[0]
-            df[category] = df_pred["prediction"]
+            emotion = pred_file.split("_")[-1].split(".")[0]
+            df[emotion] = df_pred["prediction"]
 
         li.append(df)
     return pd.concat(li, axis=0, ignore_index=False)
@@ -61,11 +61,11 @@ def get_tweets_with_predicitons(data_dir, predictions_dir):
 
 def plot_daily_emotions(dataf, emotion):
     """
-    Plot daily emotions for each year.
+    Plot daily emotions from the same period pre Covid and Covid.
 
     Parameters:
-    dataf (pd.DataFrame): DataFrame containing the data
-    emotion (str): Column name of the emotion to be plotted
+    dataf (pd.DataFrame): DataFrame containing the tweets and their associated emotions
+    emotion (str): Emotion
     """
     dataf = dataf.copy()
 
@@ -150,7 +150,7 @@ def get_no_tokens(text):
 
 @log_step
 def filter_tweet_len(dataf, min_tweet_len=5):
-    """Filter tweets with less than certain length of words"""
+    """Filter tweets with less than certain length of tokens"""
     min_tweet_lens = (dataf.text.apply(get_no_tokens) >= min_tweet_len).index
 
     return dataf.loc[lambda d: d.index.isin(min_tweet_lens)]
